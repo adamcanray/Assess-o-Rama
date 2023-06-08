@@ -1,113 +1,151 @@
-import Image from 'next/image'
+"use client";
+import Row from "@/components/Row";
+import { copyToClipboard } from "@/utils/copyToClipboard";
+import Image from "next/image";
+import { memo, useState } from "react";
+
+interface IAspects {
+  aspek_penilaian_1: { [key: string]: number };
+  aspek_penilaian_2: { [key: string]: number };
+  aspek_penilaian_3: { [key: string]: number };
+  aspek_penilaian_4: { [key: string]: number };
+}
+
+const aspectsDefaultValue = {
+  aspek_penilaian_1: {},
+  aspek_penilaian_2: {},
+  aspek_penilaian_3: {},
+  aspek_penilaian_4: {},
+};
+
+const PlusSmIc = () => (
+  <Image src="/plus-sm-ic.svg" width={24} height={24} alt="plus-sm-ic" />
+);
+
+const MemoizedPlusSmIc = memo(PlusSmIc);
 
 export default function Home() {
+  const [aspects, setAspects] = useState<IAspects>(aspectsDefaultValue);
+  const [showResultModal, setShowResultModal] = useState<boolean>(false);
+  const [students, setStudents] = useState<Array<{ id: number; name: string }>>(
+    [{ id: 1, name: "1" }]
+  );
+
+  const onSave = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+
+    let aspectsResult = { ...aspects };
+
+    students.forEach((student, studentKey) => {
+      aspectsResult = {
+        aspek_penilaian_1: {
+          ...aspectsResult.aspek_penilaian_1,
+          [`mahasiswa_${student.id}`]: parseInt(
+            (e.target as any)[`aspek_penilaian_1[${student.id}]`].value
+          ),
+        },
+        aspek_penilaian_2: {
+          ...aspectsResult.aspek_penilaian_2,
+          [`mahasiswa_${student.id}`]: parseInt(
+            (e.target as any)[`aspek_penilaian_2[${student.id}]`].value
+          ),
+        },
+        aspek_penilaian_3: {
+          ...aspectsResult.aspek_penilaian_3,
+          [`mahasiswa_${student.id}`]: parseInt(
+            (e.target as any)[`aspek_penilaian_3[${student.id}]`].value
+          ),
+        },
+        aspek_penilaian_4: {
+          ...aspectsResult.aspek_penilaian_4,
+          [`mahasiswa_${student.id}`]: parseInt(
+            (e.target as any)[`aspek_penilaian_4[${student.id}]`].value
+          ),
+        },
+      };
+    });
+
+    setAspects(aspectsResult as any);
+
+    setShowResultModal(true);
+  };
+
+  const addStudent = () => {
+    const newStudentId: number = students[students.length - 1].id + 1;
+    setStudents([
+      ...students,
+      { id: newStudentId, name: newStudentId.toString() },
+    ]);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="px-10 py-6 relative min-h-screen text-neutral-800">
+      <h1 className="text-2xl text-center">Aplikasi Penilaian Mahasiswa</h1>
+      <div className="mt-10">
+        <form onSubmit={onSave}>
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="p-2 text-left"></th>
+                <th className="p-2 text-left">Aspek Penilaian 1</th>
+                <th className="p-2 text-left">Aspek Penilaian 2</th>
+                <th className="p-2 text-left">Aspek Penilaian 3</th>
+                <th className="p-2 text-left">Aspek Penilaian 4</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((student, studentKey) => (
+                <Row key={studentKey} student={student} />
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              className="p-2 bg-green-500"
+              onClick={addStudent}
+            >
+              <MemoizedPlusSmIc />
+            </button>
+            <button type="submit" className="px-4 py-2 bg-blue-500 text-white">
+              Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+      {showResultModal && (
+        <div className="absolute z-10 top-0 right-0 bottom-0 left-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white shadow-lg">
+            <div className="text-right">
+              <button
+                className="px-3 py-1.5 text-neutral-800 text-2xl leading-none"
+                onClick={() => {
+                  setShowResultModal(false);
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="px-6 py-4">
+              <div className="w-96 h-[300px] overflow-auto">
+                <div className="bg-gray-50 text-neutral-800 whitespace-pre p-4">
+                  {JSON.stringify(aspects, null, 2)}
+                </div>
+              </div>
+              <button
+                className="mt-4 px-4 py-1 bg-pink-500 text-white"
+                onClick={() => {
+                  copyToClipboard(JSON.stringify(aspects, null, 2)).then(() => {
+                    alert("Copied!");
+                  });
+                }}
+              >
+                Copy
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      )}
     </main>
-  )
+  );
 }
